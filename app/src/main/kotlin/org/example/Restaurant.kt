@@ -9,49 +9,115 @@ class Restaurant() {
     private val menuFilePath = "menu.json"
     private val ordersFilePath = "orders.json"
     private val usersFilePath = "users.json"
+    private val revenueFilePath = "revenue.txt"
     private val gson = Gson()
-    val menu = loadMenu()
-    val users = loadUsers()
-    val orders = mutableListOf<Order>()
+    var menu = loadMenu()
+    var users = loadUsers()
+    var orders = mutableListOf<Order>()
+    var revenue = loadRevenue()
 
-    fun saveMenu(menu: Menu) {
+
+    fun saveRevenue() {
+        File(revenueFilePath).writeText(revenue.toString())
+    }
+
+    fun loadRevenue(): Double {
+        return try {
+            File(revenueFilePath).readText().toDouble()
+        } catch (e: Exception) {
+            0.0
+        }
+    }
+
+    public fun removeDish(dishNameToRemove: String) {
+        menu.dishes.removeIf { it.name == dishNameToRemove }
+        println("Блюдо удалено: $dishNameToRemove")
+        saveMenu()
+    }
+
+    public fun addDish(dish: Dish) {
+        menu.addDish(dish)
+        println("Блюдо добавлено: $dish.name")
+        saveMenu()
+    }
+
+    public fun displayMenu() {
+        println("Меню: ")
+        menu.displayMenu()
+    }
+
+    fun saveMenu() {
         val json = gson.toJson(menu)
         File(menuFilePath).writeText(json)
     }
 
-    fun loadMenu(): Menu? {
+    fun loadMenu(): Menu {
         return try {
             val json = File(menuFilePath).readText()
             gson.fromJson(json, Menu::class.java)
         } catch (e: Exception) {
-            null
+            Menu()
         }
     }
 
-    fun saveUsers(users: List<User>) {
+    fun saveUsers() {
         val json = gson.toJson(users)
         File(usersFilePath).writeText(json)
     }
 
-    fun loadUsers(): List<User> {
+    fun loadUsers():MutableList<User> {
         return try {
             val json = File(usersFilePath).readText()
-            gson.fromJson(json, object : TypeToken<List<User>>() {}.type)
+            gson.fromJson(json, object : TypeToken<MutableList<User>>() {}.type)
         } catch (e: Exception) {
             println()
-            emptyList()
+            mutableListOf()
         }
     }
 
-    fun makeOrder(dishes: MutableList<Dish>, user: User) {
+    public fun makeOrder(dishes: MutableList<Dish>, user: User) {
         orders.add(Order(dishes, user))
+        processOrder(orders.size - 1)
     }
 
-    fun displayOrders() {
+    public fun cancelOrder(orderIndex: Int) {
+        orders[orderIndex].status = -1
+        println("Заказ ${orderIndex+1} отменен")
+    }
+
+    public fun payOrder(orderIndex: Int) {
+        orders[orderIndex].dishes.forEach {
+            revenue += it.price
+        }
+        saveRevenue()
+        orders.removeAt(orderIndex)
+        println("Заказ ${orderIndex+1} оплачен")
+    }
+
+    public fun displayOrders() {
         orders.forEach { order -> 
-            order.dishes.forEach { dish -> 
+            order.dishes.forEach { dish: Dish -> 
                 dish.displayDish()
             }
+            when(order.status) {
+                -1 -> {
+                    print("Отменён\n")
+                }
+                0 -> {
+                    print("Не готов\n")
+                }
+                1 -> {
+                    print("Готов\n")
+                }
+            }
         }
+    }
+
+    public fun registerUser(username: String, password: String, isAdmin: Boolean) {
+        users.add(User(username, password, isAdmin))
+    }
+
+    public fun processOrder(orderIndex: Int) {
+        orders[orderIndex].processOrder(orderIndex)
     }
 }

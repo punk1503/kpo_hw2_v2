@@ -26,6 +26,8 @@ dependencies {
     implementation(libs.guava)
     
     implementation("com.google.code.gson:gson:2.8.8")
+    
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 }
 
 java {
