@@ -9,11 +9,25 @@ class Restaurant() {
     private val menuFilePath = "menu.json"
     private val ordersFilePath = "orders.json"
     private val usersFilePath = "users.json"
+    private val revenueFilePath = "revenue.txt"
     private val gson = Gson()
     var menu = loadMenu()
     var users = loadUsers()
     var orders = mutableListOf<Order>()
-    var revenue: Double = 0.0 
+    var revenue = loadRevenue()
+
+
+    fun saveRevenue() {
+        File(revenueFilePath).writeText(revenue.toString())
+    }
+
+    fun loadRevenue(): Double {
+        return try {
+            File(revenueFilePath).readText().toDouble()
+        } catch (e: Exception) {
+            0.0
+        }
+    }
 
     public fun removeDish(dishNameToRemove: String) {
         menu.dishes.removeIf { it.name == dishNameToRemove }
@@ -72,6 +86,10 @@ class Restaurant() {
     }
 
     public fun payOrder(orderIndex: Int) {
+        orders[orderIndex].dishes.forEach {
+            revenue += it.price
+        }
+        saveRevenue()
         orders.removeAt(orderIndex)
         println("Заказ ${orderIndex+1} оплачен")
     }
