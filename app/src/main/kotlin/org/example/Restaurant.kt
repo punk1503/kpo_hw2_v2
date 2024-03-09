@@ -10,26 +10,42 @@
         private val ordersFilePath = "orders.json"
         private val usersFilePath = "users.json"
         private val gson = Gson()
-        val menu = loadMenu()
-        val users = loadUsers()
-        val orders = mutableListOf<Order>()
+        var menu = loadMenu()
+        var users = loadUsers()
+        var orders = mutableListOf<Order>()
 
+        public fun removeDish(dishNameToRemove: String) {
+            menu.dishes.removeIf { it.name == dishNameToRemove }
+            println("Блюдо удалено: $dishNameToRemove")
+            saveMenu()
+        }
 
-        fun saveMenu(menu: Menu) {
+        public fun addDish(dish: Dish) {
+            menu.addDish(dish)
+            println("Блюдо добавлено: $dish.name")
+            saveMenu()
+        }
+
+        public fun displayMenu() {
+            println("Меню: ")
+            menu.displayMenu()
+        }
+
+        fun saveMenu() {
             val json = gson.toJson(menu)
             File(menuFilePath).writeText(json)
         }
 
-        fun loadMenu(): Menu? {
+        fun loadMenu(): Menu {
             return try {
                 val json = File(menuFilePath).readText()
                 gson.fromJson(json, Menu::class.java)
             } catch (e: Exception) {
-                null
+                Menu()
             }
         }
 
-        fun saveUsers(users: List<User>) {
+        fun saveUsers() {
             val json = gson.toJson(users)
             File(usersFilePath).writeText(json)
         }
@@ -44,34 +60,44 @@
             }
         }
 
-        fun makeOrder(dishes: MutableList<Dish>, user: User) {
+        public fun makeOrder(dishes: MutableList<Dish>, user: User) {
             orders.add(Order(dishes, user))
         }
 
-        fun cancelOrder(orderIndex: Int) {
+        public fun cancelOrder(orderIndex: Int) {
             orders[orderIndex].status = -1
+            println("Заказ {$orderIndex+1} отменен")
         }
 
-        fun payOrder(orderIndex: Int) {
+        public fun payOrder(orderIndex: Int) {
             orders.removeAt(orderIndex)
-            println("Заказ $orderIndex отменён")
+            println("Заказ {$orderIndex+1} оплачен")
         }
 
-        fun displayOrders() {
+        public fun displayOrders() {
             orders.forEach { order -> 
                 order.dishes.forEach { dish -> 
                     dish.displayDish()
                 }
+                when(order.status) {
+                    -1 -> {
+                        print("Отменён\n")
+                    }
+                    0 -> {
+                        print("Не готов\n")
+                    }
+                    1 -> {
+                        print("Готов\n")
+                    }
+                }
             }
         }
 
-        fun registerUser(username: String, password: String, isAdmin: Boolean) {
+        public fun registerUser(username: String, password: String, isAdmin: Boolean) {
             users.add(User(username, password, isAdmin))
         }
 
-        fun processOrder(orderIndex: Int) {
+        public fun processOrder(orderIndex: Int) {
             orders[orderIndex].processOrder()
         }
-
-
     }

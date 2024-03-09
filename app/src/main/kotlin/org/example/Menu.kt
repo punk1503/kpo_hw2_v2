@@ -1,5 +1,15 @@
 package org.example
 
 class Menu {
-    val dishes = mutableListOf<Dish>()
+    var dishes = mutableListOf<Dish>()
+    
+    fun displayMenu() {
+        dishes.forEach {
+            it.displayDish()
+        }
+    }
+
+    fun addDish(dish: Dish) {
+        dishes.add(dish)
+    }
 }

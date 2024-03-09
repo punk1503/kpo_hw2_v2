@@ -5,15 +5,35 @@ class Order(dishes: MutableList<Dish>, user: User){
     public val user = user
     public var status = 0 // 0 - not ready, 1 - ready, -1 - canceled
 
-    fun processOrder() {
-        dishes.forEach{dish -> 
-            Thread {
-                // Simulate preparing the dish
+    fun processOrder(orderNumber: Int) {
+        val threads = mutableListOf<Thread>()
+
+        // Счетчик завершенных потоков
+        var finishedThreads = 0
+
+        dishes.forEach { dish ->
+            val thread = Thread {
+                // Симулируем приготовление блюда
                 Thread.sleep(dish.cookingTime * 1000L)
-    
-                // Output message about dish readiness
+
+                // Выводим сообщение о готовности блюда
                 println("Блюдо ${dish.name} готово!")
-            }.start()
+                
+                // Увеличиваем счетчик завершенных потоков
+                synchronized(this) {
+                    finishedThreads++
+                }
+
+                // Проверяем, все ли блюда готовы
+                if (finishedThreads == dishes.size) {
+                    println("Заказ номер $orderNumber готов!")
+                }
+            }
+            threads.add(thread)
+            thread.start()
         }
+
+        // Ждем завершения всех потоков
+        threads.forEach { it.join() }
     }
 }

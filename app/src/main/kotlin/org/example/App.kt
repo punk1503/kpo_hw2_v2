@@ -1,6 +1,67 @@
 package org.example
 import java.util.Scanner
 
+fun inputChoice(prompt: String, min: Int, max: Int): Int {
+    val scanner = Scanner(System.`in`)
+    var number: Int? = null
+
+    while (number == null || number !in min..max) {
+        print(prompt)
+        if (scanner.hasNextInt()) {
+            number = scanner.nextInt()
+            if (number !in min..max) {
+                println("Число должно быть между $min и $max.")
+                number = null
+            }
+        } else {
+            println("Неверный ввод. Пожалуйста, введите целое число.")
+            scanner.next()
+        }
+    }
+    return number
+}
+
+fun inputDouble(prompt: String, min: Double): Double {
+    val scanner = Scanner(System.`in`)
+    var doubleNumber: Double? = null
+
+    while (doubleNumber == null || doubleNumber < min) {
+        print(prompt)
+        if (scanner.hasNextDouble()) {
+            doubleNumber = scanner.nextDouble()
+            if (doubleNumber < min) {
+                println("Число должно быть больше или равно $min")
+                doubleNumber = null
+            }
+        } else {
+            println("Неверный ввод. Пожалуйста, введите дробное число.")
+            scanner.next()
+        }
+    }
+    return doubleNumber
+}
+
+fun inputInteger(prompt: String, min: Int): Int {
+    val scanner = Scanner(System.`in`)
+    var number: Int? = null
+
+    while (number == null || number < min) {
+        print(prompt)
+        if (scanner.hasNextInt()) {
+            number = scanner.nextInt()
+            if (number < min) {
+                println("Число должно быть больше или равно $min")
+                number = null
+            }
+        } else {
+            println("Неверный ввод. Пожалуйста, введите целое число.")
+            scanner.next()
+        }
+    }
+    return number
+
+}
+
 fun main() {
     val restaurant = Restaurant()
     val scanner = Scanner(System.`in`)
@@ -14,15 +75,7 @@ fun main() {
             println("2. Регистрация")
             println("3. Выйти")
             print("Выберите действие: ")
-            var choice: Int
-            try {
-                choice = scanner.nextInt()
-            }
-            catch(e: java.util.InputMismatchException) {
-                println("Введено неверное значение меню")
-                scanner.next()
-                continue
-            }
+            var choice = inputChoice("Пункт меню(1, 3): ", 1, 3)
             
             when (choice) {
                 1 -> {
@@ -46,6 +99,7 @@ fun main() {
                     val isAdmin = if(scanner.next() == "y") true else false
                     restaurant.registerUser(username, password, isAdmin = isAdmin)
                     println("Пользователь зарегистрирован!")
+                    restaurant.saveUsers()
                 }
                 3 -> {
                     println("Выход из программы...")
@@ -59,6 +113,31 @@ fun main() {
                 println("2. Добавить блюдо в меню")
                 println("3. Удалить блюдо из меню")
                 println("4. Выйти")
+
+                var choice = inputChoice("Пункт меню(1, 4): ", 1, 4)
+                when(choice) {
+                    1 -> {
+                        restaurant.displayMenu()
+                    }
+                    2 -> {
+                        println("Введите данные нового блюда: ")
+                        print("Название: ")
+                        val name = scanner.next()
+                        val cookingTime = inputInteger("Время приготовления(сек): ", 0)
+                        val price = inputDouble("Цена(руб): ", 0.0)
+                        val amount = inputInteger("Количество: ", 0)
+                        restaurant.addDish(Dish(name, cookingTime, price, amount))
+                    }
+                    3 -> {
+                        print("Введите название блюда: ")
+                        val name = scanner.next()
+                        restaurant.removeDish(name)
+                    }
+                    4 -> {
+                        break
+                    }
+
+                }
             }
             else {
                 println("1. Просмотр меню")
@@ -66,33 +145,35 @@ fun main() {
                 println("3. Отменить заказ")
                 println("4. Оплатить заказ")
                 println("5. Выйти")
-                var choice: Int
-                print("Выберите действие: ")
-                try {
-                    choice = scanner.nextInt()
-                }
-                catch(e: java.util.InputMismatchException) {
-                    println("Введено неверное значение меню")
-                    scanner.next()
-                    continue
-                }
+                val choice = inputChoice("Пункт меню(1, 5): ", 1, 5)
     
                 when (choice) {
                     1 -> {
                         println("\nМеню:")
-                        restaurant.menu?.dishes?.forEach { println("${it.name} - ${it.price}") }
+                        restaurant.menu.dishes.forEach { println("${it.name} - ${it.price}") }
                     }
                     2 -> {
                         println("\nМеню:")
-                        restaurant.menu?.dishes?.forEachIndexed { index, dish ->
+                        restaurant.menu.dishes.forEachIndexed { index, dish ->
                             println("${index + 1}. ${dish.name} - ${dish.price}")
                         }
     
                         val orderDishes = mutableListOf<Dish>()
-                        print("Выберите блюда (номера через пробел): ")
-                        val dishNumbers = scanner.nextLine().split(" ").map { it.toInt() }
+                        print("Выберите блюда (номера через пробел, неверные будут проигнорированны): ")
+                        var dishNumbers: List<Int>
+                        while(true) {
+                            try {
+                                dishNumbers = scanner.nextLine().split(" ").map { it.toInt() }
+                                break
+                            } catch (e: Exception) {
+                                println("Неверные значения типа 'число'")
+                                continue
+                            }
+                            
+
+                        }
                         dishNumbers.forEach { index ->
-                            if (index in 1..restaurant.menu?.dishes?.size!!)
+                            if (index in 1..restaurant.menu.dishes.size)
                                 orderDishes.add(restaurant.menu.dishes.get(index - 1))
                         }
     
