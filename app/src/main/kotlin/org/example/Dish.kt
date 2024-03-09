@@ -4,7 +4,7 @@ class Dish(name: String = "", cookingTime: Int = 0, price: Double = 0.0, amount:
     public val name = name
     public val cookingTime = cookingTime
     public val price = price
-    public var amount = 0
+    public var amount = amount
     
     fun displayDish() {
         println("Блюдо: $name - $price рублей : $cookingTime секунд, $amount осталось")

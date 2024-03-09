@@ -1,39 +1,31 @@
 package org.example
+import kotlinx.coroutines.*
 
-class Order(dishes: MutableList<Dish>, user: User){
-    public val dishes = dishes
-    public val user = user
-    public var status = 0 // 0 - not ready, 1 - ready, -1 - canceled
+class Order(public val dishes: List<Dish>, private val user: User) {
+    var status = 0 // 0 - not ready, 1 - ready, -1 - canceled
 
     fun processOrder(orderNumber: Int) {
-        val threads = mutableListOf<Thread>()
+        // Запускаем корутину для обработки заказа
+        CoroutineScope(Dispatchers.Default).launch {
+            val deferredJobs = mutableListOf<Deferred<Unit>>()
 
-        // Счетчик завершенных потоков
-        var finishedThreads = 0
+            // Создаем и запускаем отложенные задания для приготовления каждого блюда
+            dishes.forEach { dish: Dish ->
+                val deferredJob = async {
+                    // Симулируем приготовление блюда
+                    delay(dish.cookingTime * 1000L)
 
-        dishes.forEach { dish ->
-            val thread = Thread {
-                // Симулируем приготовление блюда
-                Thread.sleep(dish.cookingTime * 1000L)
-
-                // Выводим сообщение о готовности блюда
-                println("Блюдо ${dish.name} готово!")
-                
-                // Увеличиваем счетчик завершенных потоков
-                synchronized(this) {
-                    finishedThreads++
+                    // Выводим сообщение о готовности блюда
+                    println("Блюдо ${dish.name} готово!")
                 }
-
-                // Проверяем, все ли блюда готовы
-                if (finishedThreads == dishes.size) {
-                    println("Заказ номер $orderNumber готов!")
-                }
+                deferredJobs.add(deferredJob)
             }
-            threads.add(thread)
-            thread.start()
-        }
 
-        // Ждем завершения всех потоков
-        threads.forEach { it.join() }
+            // Ожидаем завершения всех отложенных заданий
+            deferredJobs.awaitAll()
+
+            // Выводим сообщение о готовности заказа после завершения всех блюд
+            println("Заказ номер ${orderNumber+1} готов!")
+        }
     }
 }

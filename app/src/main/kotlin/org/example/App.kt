@@ -182,11 +182,11 @@ fun main() {
                     }
                     3 -> {
                         println("\nТекущие заказы:")
-                        restaurant.orders.forEachIndexed { index, order ->
-                            println("${index + 1}. ${order.dishes.joinToString(", ") { it.name }}")
+                        restaurant.orders.forEachIndexed { index: Int, order: Order ->
+                            println("${index+1}. ${order.dishes.joinToString(", ") { it.name }}")
                         }
     
-                        print("Введите номер заказа для отмены: ")
+                        print("Введите номер заказа для отмены (-1 для выхода): ")
                         val orderIndex = scanner.nextInt() - 1
     
                         if (orderIndex in 0 until restaurant.orders.size) {
@@ -198,11 +198,11 @@ fun main() {
                     }
                     4 -> {
                         println("\nТекущие заказы:")
-                        restaurant.orders.forEachIndexed { index, order ->
-                            println("${index + 1}. ${order.dishes.joinToString(", ") { it.name }}")
+                        restaurant.orders.forEachIndexed { index: Int, order: Order ->
+                            println("${index+1}. ${order.dishes.joinToString(", ") { it.name }}")
                         }
     
-                        print("Введите номер заказа для оплаты: ")
+                        print("Введите номер заказа для оплаты (-1 для выхода): ")
                         val orderIndex = scanner.nextInt() - 1
     
                         if (orderIndex in 0 until restaurant.orders.size) {
